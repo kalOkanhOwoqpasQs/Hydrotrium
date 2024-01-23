@@ -38,9 +38,9 @@ end
 setting.recycles = function()
     if findItem(block) > 0 then
         sendPacket("action|trash\n|itemID|"..block,2)
-        sleep(4000)
+        sleep(1000)
         sendPacket("action|dialog_return\ndialog_name|trash_item\nitemID|" .. block .. "|\ncount|" .. findItem(block),2)
-        sleep(4000)
+        sleep(1000)
     end
 end
 
@@ -58,7 +58,7 @@ end
 setting.botstatus = function()
     str = ""
     for _, bot in pairs(getBots()) do
-        str = str.."\n"..""..(string.upper(bot.name)).."" 
+        str = str.."\n"..string.upper(bot.name)..""
     end
     return str
 end
@@ -66,7 +66,7 @@ end
 setting.botworld = function()
     str = ""
     for _, bot in pairs(getBots()) do
-        str = str.."\n"..""..(string.upper(bot.world)).."" 
+        str = str.."\n"..string.upper(bot.world).."" 
     end
     return str
 end
@@ -74,7 +74,7 @@ end
 setting.botnotif = function()
     str = ""
     for _, bot in pairs(getBots()) do
-        str = str.."\n"..""..(string.upper(bot.status)).."" 
+        str = str.."\n"..string.upper(bot.status).."" 
     end
     return str
 end
@@ -90,7 +90,7 @@ end
 setting.hookblock = function()
     str = ""
 	for i = 1, #storageblock do
-        str = str.."\nStorage blocks - "..i.." : "..(infoid[storageblock[i]] or "Undefined")..""
+        str = str.."\nStorage blocks - "..i.." : "..(infoid[storageblock[i]] or "???")..""
     end
     return str
 end
@@ -98,7 +98,7 @@ end
 setting.hookseed = function()
     str = ""
 	for i = 1, #storageseed do
-        str = str.."\nStorage seeds - "..i.." : "..(infoid[storageseed[i]] or "Undefined")..""
+        str = str.."\nStorage seeds - "..i.." : "..(infoid[storageseed[i]] or "???")..""
     end
     return str
 end
@@ -106,7 +106,7 @@ end
 setting.hookpack = function()
     str = ""
 	for i = 1, #storagepack do
-        str = str.."\nStorage packs - "..i.." : "..(infoid[storagepack[i]] or "Undefined")..""
+        str = str.."\nStorage packs - "..i.." : "..(infoid[storagepack[i]] or "???")..""
     end
     return str
 end
@@ -114,9 +114,21 @@ end
 setting.hookevent = function()
     str = ""
 	for i = 1, #storageevent do
-        str = str.."\nStorage events - "..i.." : "..(infoid[storageevent[i]] or "Undefined")..""
+        str = str.."\nStorage events - "..i.." : "..(infoid[storageevent[i]] or "???")..""
     end
     return str
+end
+
+setting.goodtimes = function(estimates)
+    local seconds = tonumber(estimates)
+    if seconds <= 0 then
+        return "00:00:00";
+    else
+        hours = string.format("%02.f", math.floor(estimates/3600));
+        minutes = string.format("%02.f", math.floor(estimates/60 - (hours*60)));
+        seconds = string.format("%02.f", math.floor(estimates - hours*3600 - minutes *60));
+        return ""..hours.." : "..minutes.." : "..seconds..""
+    end
 end
 
 setting.webhookinfo = function()
@@ -124,7 +136,7 @@ setting.webhookinfo = function()
         local text = [[
             $webHookUrl = "]]..linkbotinfo..[[/messages/]]..messageidbotinfo..[["
             $payload = @{
-                username = "Caramoy's"
+                username = "Debra's"
                 embeds = @(
                     @{
                         title = "BOT STATICS [HARVEST]"
@@ -132,7 +144,7 @@ setting.webhookinfo = function()
                         fields = @(
                             @{
                                 name = "TOTAL GEMS & RUNTIME"
-                                value = "]]..""..setting.botgems().."|"..setting.goodtimes(os.difftime(os.time(),params.timechecker))..""..[["
+                                value = "]]..setting.botgems().." & "..setting.goodtimes(os.difftime(os.time(),params.timechecker))..[["
                                 inline = "false"
                             }
                             @{
@@ -226,18 +238,6 @@ setting.botinfo = function(text)
         local file = io.popen("powershell -command -", "w")
         file:write(text)
         file:close()
-    end
-end
-
-setting.goodtimes = function(estimates)
-    local seconds = tonumber(estimates)
-    if seconds <= 0 then
-        return "00:00:00";
-    else
-        hours = string.format("%02.f", math.floor(estimates/3600));
-        minutes = string.format("%02.f", math.floor(estimates/60 - (hours*60)));
-        seconds = string.format("%02.f", math.floor(estimates - hours*3600 - minutes *60));
-        return ""..hours.." : "..minutes.." : "..seconds
     end
 end
 
@@ -335,7 +335,7 @@ setting.warp = function(world,door)
             sleep(delaywarp)
         end
         removeHooks()
-        sleep(2000)
+        sleep(1000)
     end
     if getBot().world == string.upper(world) then
         if door ~= "" then
@@ -376,15 +376,17 @@ setting.itemFloat = function(id)
 end
 
 setting.joinworld = function()
-    for _, world in pairs(worldclearhistory) do
+    for _, worlds in pairs(worldclearhistory) do
         ::BACK::
         setJob("Clearing history")
-        setting.warp(world,"")
+        setting.warp(worlds,"")
         if not subserver then
             if not nuked then
-                move(1,0)
-                sleep(250)
-                setting.reconnect(world,"")
+                while getTile(math.floor(getBot().x / 32),math.floor(getBot().y / 32)).fg == 6 do
+                    move(1,0)
+                    sleep(500)
+                end
+                setting.reconnect(worlds,"")
             else
                 nuked = false
                 sleep(5000)
@@ -410,11 +412,11 @@ setting.buying = function()
             if upbackpack then
                 while getBot().slots < 36 do
                     sendPacket("action|buy\nitem|upgrade_backpack",2)
-                    sleep(2000)
+                    sleep(1000)
                 end
             end
             sendPacket("action|buy\nitem|"..debug,2)
-            sleep(3000)
+            sleep(1000)
             if findItem(packList[1]) >= 200 then
                 break
             end
@@ -969,13 +971,13 @@ setting.rechecking = function(threads)
             if setting.itemFloat(block) ~= 0 then
                 findPath(math.floor(obj.x / 32),math.floor(obj.y / 32))
                 sleep(30)
+                setting.reconnect(threads,doorfarmList,math.floor(obj.x / 32),math.floor(obj.y / 32))
                 if ignoregems then
                     collect(range,112)
                 else
                     collect(range)
                 end
                 sleep(30)
-                setting.reconnect(threads,doorfarmList,math.floor(obj.x / 32),math.floor(obj.y / 32))
             end
             if findItem(block) > 180 then
                 if recycle then
@@ -1101,18 +1103,18 @@ setting.support = function()
                             sleep(1000)
                             setting.reconnect(world,door,math.floor(obj.x / 32),math.floor(obj.y / 32))
                             if findItem(idwearitem) > 0  then
-                                move(-1,0)
-                                sleep(500)
-                                wear(idwearitem)
-                                sleep(500)
-                                drop(idwearitem,findItem(idwearitem) - keep)
-                                sleep(500)
-                                print("[ ||"..getBot().name.."|| ] Success take and wear the support items!")
-                                setting.botinfo("[ ||"..getBot().name.."|| ] Success take and wear the support items!")
                                 break
                             end
                         end
                     end
+                    move(-1,0)
+                    sleep(500)
+                    wear(idwearitem)
+                    sleep(500)
+                    drop(idwearitem,findItem(idwearitem) - keep)
+                    sleep(500)
+                    print("[ ||"..getBot().name.."|| ] Success take and wear the support items!")
+                    setting.botinfo("[ ||"..getBot().name.."|| ] Success take and wear the support items!")
                 else
                     print("Support item is empty, Drop the support item right now!")
                     setting.botinfo("Support item is empty, Drop the support item right now! @everyone")
